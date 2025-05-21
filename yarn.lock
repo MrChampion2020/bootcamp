@@ -2805,7 +2805,7 @@ ini@^1.3.4:
 
 inquirer2@^0.1.1, "inquirer2@github:jonschlinkert/inquirer2":
   version "0.1.1"
-  resolved "git+ssh://git@github.com/jonschlinkert/inquirer2.git#9b4985f5bf7c8590bb79e039de1acab5719ae3fc"
+  resolved "git+https://github.com/jonschlinkert/inquirer2.git#9b4985f5bf7c8590bb79e039de1acab5719ae3fc"
   dependencies:
     ansi-escapes "^1.1.1"
     ansi-regex "^2.0.0"
