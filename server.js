@@ -616,6 +616,8 @@ const eventSchema = new mongoose.Schema({
   endDate: { type: Date },
   location: { type: String, trim: true },
   imageUrl: { type: String, trim: true },
+  videoUrl: { type: String, trim: true }, // New: video URL
+  videoDuration: { type: Number, default: 0 }, // New: video duration in seconds
   category: { type: String, enum: ['children', 'teens', 'main'], required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
   createdAt: { type: Date, default: Date.now },
@@ -2079,13 +2081,16 @@ app.get('/api/admin/events', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Error fetching events' });
   }
 });
-// Admin: Create event (with imageUrl support)
+// Admin: Create event (with imageUrl and videoUrl support)
 app.post('/api/admin/event', authenticateToken, async (req, res) => {
   try {
-    const { title, description, startDate, endDate, location, imageUrl } = req.body;
+    const { title, description, startDate, endDate, location, imageUrl, videoUrl, videoDuration, category } = req.body;
     if (!title || !startDate) return res.status(400).json({ message: 'Title and start date are required' });
+    if (videoUrl && (!videoDuration || videoDuration > 600)) {
+      return res.status(400).json({ message: 'Video duration must be 10 minutes (600 seconds) or less.' });
+    }
     const event = new Event({
-      title, description, startDate, endDate, location, imageUrl, createdBy: req.admin._id
+      title, description, startDate, endDate, location, imageUrl, videoUrl, videoDuration, category, createdBy: req.admin._id
     });
     await event.save();
     res.status(201).json({ message: 'Event created', event });
@@ -2112,6 +2117,9 @@ app.put('/api/admin/event/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body, updatedAt: Date.now() };
+    if (updateData.videoUrl && (!updateData.videoDuration || updateData.videoDuration > 600)) {
+      return res.status(400).json({ message: 'Video duration must be 10 minutes (600 seconds) or less.' });
+    }
     const event = await Event.findByIdAndUpdate(id, updateData, { new: true });
     if (!event) return res.status(404).json({ message: 'Event not found' });
     res.status(200).json({ message: 'Event updated', event });
