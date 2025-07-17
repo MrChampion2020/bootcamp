@@ -2084,18 +2084,27 @@ app.get('/api/admin/events', authenticateToken, async (req, res) => {
 // Admin: Create event (with imageUrl and videoUrl support)
 app.post('/api/admin/event', authenticateToken, async (req, res) => {
   try {
-    const { title, description, startDate, endDate, location, imageUrl, videoUrl, videoDuration, category } = req.body;
-    if (!title || !startDate) return res.status(400).json({ message: 'Title and start date are required' });
+    const { title, description, startDate, endDate, venue, imageUrl, videoUrl, videoDuration, category } = req.body;
     if (videoUrl && (!videoDuration || videoDuration > 600)) {
       return res.status(400).json({ message: 'Video duration must be 10 minutes (600 seconds) or less.' });
     }
     const event = new Event({
-      title, description, startDate, endDate, location, imageUrl, videoUrl, videoDuration, category, createdBy: req.admin._id
+      title,
+      description,
+      startDate,
+      endDate,
+      venue,
+      imageUrl,
+      videoUrl,
+      videoDuration,
+      category,
+      createdBy: req.admin._id
     });
     await event.save();
     res.status(201).json({ message: 'Event created', event });
-    // Notify admins
-    const admins = await Admin.find({ isActive: true });
+
+    // Send notification to all admins (do not send another response)
+    const admins = await Admin.find({});
     for (const admin of admins) {
       await sendNotification({
         recipient: admin._id,
@@ -2109,7 +2118,12 @@ app.post('/api/admin/event', authenticateToken, async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error creating event' });
+    // Only send a response if one hasn't been sent yet
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error creating event' });
+    } else {
+      console.error('Error after response sent:', error);
+    }
   }
 });
 // Admin: Update event
@@ -2395,3 +2409,20 @@ app.listen(PORT || 5000, () => {
   // Start keep-alive functions
   startKeepAlive();
 });
+
+// Simple keep-alive endpoint for self-ping
+app.get('/keep-alive', (req, res) => {
+  res.status(200).json({ message: 'Keep-alive ping', timestamp: new Date().toISOString() });
+});
+
+// Add a self-ping keep-alive every 15 minutes
+setInterval(() => {
+  const http = require('http');
+  const port = PORT || 5000;
+  const url = `http://localhost:${port}/keep-alive`;
+  http.get(url, (res) => {
+    console.log(`🔄 Self keep-alive ping: ${url} - Status: ${res.statusCode}`);
+  }).on('error', (err) => {
+    console.error('Self keep-alive error:', err.message);
+  });
+}, 15 * 60 * 1000); // Every 15 minutes
