@@ -38,6 +38,8 @@ const corsOptions = {
     'http://localhost:3001',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
+    'https://www.ceibz1.online',
+    'https://ceibz1.online',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
