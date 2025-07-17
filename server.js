@@ -4,7 +4,6 @@ const cors = require("cors")
 const dotenv = require('dotenv')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const http = require("http")
@@ -25,26 +24,8 @@ const app = express()
 app.use(helmet())
 app.use(morgan('combined'))
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-})
-app.use('/api/', limiter)
-
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://127.0.0.1:3002',
-    'https://www.ceibz1.online',
-    'https://ceibz1.online',
-    'https://ceibz1.vercel.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: '*',
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',
