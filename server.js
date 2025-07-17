@@ -36,10 +36,13 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002',
     'https://www.ceibz1.online',
     'https://ceibz1.online',
+    'https://ceibz1.vercel.app',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
@@ -632,6 +635,7 @@ const eventSchema = new mongoose.Schema({
   endDate: { type: Date },
   location: { type: String, trim: true },
   imageUrl: { type: String, trim: true },
+  category: { type: String, enum: ['children', 'teens', 'main'], required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
